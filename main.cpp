@@ -16,6 +16,9 @@ class Client {  // Класс клиента.
 private:
 	int number = -1;
 public:
+	Client(int n) {
+		number = n;
+	}
 	int getNumber() {
 		return number;
 	}
@@ -43,6 +46,10 @@ public:
 			clientsQueue.pop();
 		}
 	}
+	void acceptClient(Client client) {  // Принять клиента в очередь.
+		cout << "Клиент " << client.getNumber() << " встал в очередь к кассе " << number << endl;
+		clientsQueue.push(client);
+	}
 };
 
 
@@ -50,29 +57,36 @@ int main() {
 	// Создаём 2 кассы.
 	CashRegister cashRegister1(1);
 	CashRegister cashRegister2(2);
-  double currentTime = 0;  // Глобальный счётчик времени.
+	int clientNumber = 1;  // Глобальный счётчик клиентов.
 	// Есть 2 вида события - приход клиента и его уход.
 	// В любой момент времени ближайшим событием будет являться либо окончание обслуживания клиента на одной из касс, либо приход нового клиента.
 
 	// Находим время до событий.
+	double currentTime = 0;  // Глобальный счётчик времени.
 	double nextEntranceTime = currentTime + double(rand() % (RGB[1] * 100)) / 100;
 	double nextExitTimeFor1 = currentTime + R[1] + double(rand() % ((RGB[1] - R[1]) * 100)) / 100;
 	double nextExitTimeFor2 = currentTime + G[1] + double(rand() % ((RGB[1] - G[1]) * 100)) / 100;
 
-	while (currentTime < 50) {
+	while (currentTime < MODEL_TIME) {
 		// Обрабатываем ближайшее событие.
 		if (nextEntranceTime < nextExitTimeFor1 && nextEntranceTime < nextExitTimeFor2) {
 			// Ближайшим событием оказался приход клиента.
-			
+			if (cashRegister2.getQueueLength() < cashRegister1.getQueueLength()) {
+				cashRegister2.acceptClient(Client(clientNumber++));
+			} else {
+				cashRegister1.acceptClient(Client(clientNumber++));
+			}
 			currentTime = nextEntranceTime;
 			nextEntranceTime = currentTime + double(rand() % (RGB[1] * 100)) / 100;
 		} else
+
 		if (nextExitTimeFor1 < nextEntranceTime && nextExitTimeFor1 < nextExitTimeFor2) {
 			// Ближайшим событием оказалось обслуживание клиента на первой кассе.
 			cashRegister1.serveClient();
 			currentTime = nextExitTimeFor1;
 			nextExitTimeFor1 = currentTime + R[1] + double(rand() % ((RGB[1] - R[1]) * 100)) / 100;
 		} else
+
 		if (nextExitTimeFor2 < nextEntranceTime && nextExitTimeFor2 < nextExitTimeFor1) {
 			// Ближайшим событием оказалось обслуживание клиента на второй кассе.
 			cashRegister2.serveClient();
